@@ -3,6 +3,7 @@ library(shiny)
 library(shinythemes)
 library(tidyverse)
 library(caret)
+library(randomForest)
 
 
 # Define UI
@@ -98,7 +99,18 @@ and the drawbacks of each. You should include some type of math type in the expl
                              
                              
                              
-                             tabPanel("Model Fitting", h3("Predictors for models"),
+                             tabPanel("Model Fitting",h3("Percentage of Training and Test split"),br(),
+                                      sidebarPanel(
+                                        sliderInput("bins1",
+                                                    "Select percentage of training set:",
+                                                    min = 0,
+                                                    max = 1,
+                                                    value = 0.7)
+                                      ),
+                                      
+                                      
+                                      
+                                      h3("Predictors for models"),
                                       
                                       
                                     sidebarLayout(
@@ -154,7 +166,9 @@ and the drawbacks of each. You should include some type of math type in the expl
                         
                                           textOutput("randomforest"),
                                           br(),
-                                          verbatimTextOutput("randomforest2")
+                                          verbatimTextOutput("randomforest2"),
+                                          br(),
+                                          plotOutput("varImpPlot")
                                         ),
                                       )   
                                       
@@ -309,25 +323,42 @@ server <- function(input, output, session) {
   ########################################################################
   diabetes_original <- read_csv(file = "./diabetes.csv")
   
-#splitting into 70% train and 30% test set
-  set.seed(123)
+
+  
   
   diabetes_original <- diabetes_original %>% mutate(Outcome = as.factor(Outcome))
   
-  #indices to split on
-  diabetesIndex <- createDataPartition(diabetes_original$Outcome, p = 0.70, list = FALSE)
-  #subset
-  trainingSet <- diabetes_original[diabetesIndex, ]
-  testSet  <- diabetes_original[-diabetesIndex, ]
+ #  set.seed(123)
+ #  #splitting into train and test set
+ #  #indices to split on
+ # diabetesIndex <- createDataPartition(diabetes_original$Outcome, p = 0.7, list = FALSE)
+ #  #subset
+ #  trainingSet <- diabetes_original[diabetesIndex, ]
+ #  testSet  <- diabetes_original[-diabetesIndex, ]
+  
   
   
   output$logit <- renderText({ "Logistic Regression Model"
-    
+
   })
 
   
   
   output$logit2 <- renderPrint({
+    
+    #########################
+    set.seed(123)
+    #splitting into train and test set
+    #indices to split on
+    diabetesIndex <- createDataPartition(diabetes_original$Outcome, p = input$bins1, list = FALSE)
+    #subset
+    trainingSet <- diabetes_original[diabetesIndex, ]
+    testSet  <- diabetes_original[-diabetesIndex, ]
+    
+    
+    ########################
+    
+    
     log1<- trainingSet%>% select(xvar1=input$pred1, yvar1=input$pred2, zvar1=input$pred3, Outcome)
     
     log2<- testSet%>% select(xvar1=input$pred1, yvar1=input$pred2, zvar1=input$pred3, Outcome)
@@ -355,6 +386,16 @@ server <- function(input, output, session) {
   
   
   output$classtree2 <- renderPrint({
+    
+    ######################
+    set.seed(123)
+    #splitting into train and test set
+    #indices to split on
+    diabetesIndex <- createDataPartition(diabetes_original$Outcome, p = input$bins1, list = FALSE)
+    #subset
+    trainingSet <- diabetes_original[diabetesIndex, ]
+    testSet  <- diabetes_original[-diabetesIndex, ]
+    #####################
     
     log11<- trainingSet%>% select(xvar11=input$pred1, yvar11=input$pred2, zvar11=input$pred3, Outcome)
     
@@ -384,6 +425,16 @@ server <- function(input, output, session) {
   
   output$randomforest2 <- renderPrint({
     
+    ############################
+    set.seed(123)
+    #splitting into train and test set
+    #indices to split on
+    diabetesIndex <- createDataPartition(diabetes_original$Outcome, p = input$bins1, list = FALSE)
+    #subset
+    trainingSet <- diabetes_original[diabetesIndex, ]
+    testSet  <- diabetes_original[-diabetesIndex, ]
+    ###########################
+    
     log111<- trainingSet%>% select(xvar111=input$pred1, yvar111=input$pred2, zvar111=input$pred3, Outcome)
     
     log222<- testSet%>% select(xvar111=input$pred1, yvar111=input$pred2, zvar111=input$pred3, Outcome)
@@ -402,6 +453,26 @@ server <- function(input, output, session) {
     m3 <- postResample(test_pred_r_f, log222$Outcome)
     #calling m3 object
     m3
+  })
+  #################################### varplotoutput for rf
+  
+  output$varImpPlot <- renderPlot({
+    
+    ################################
+    set.seed(123)
+    #splitting into train and test set
+    #indices to split on
+    diabetesIndex <- createDataPartition(diabetes_original$Outcome, p = input$bins1, list = FALSE)
+    #subset
+    trainingSet <- diabetes_original[diabetesIndex, ]
+    testSet  <- diabetes_original[-diabetesIndex, ]
+    ###############################
+    
+    r_f2 <- randomForest(trainingSet, data=trainingSet, ntree=5
+                         , keep.forest=FALSE,
+                         importance=TRUE)
+    
+    varImpPlot(r_f2, sort=FALSE, main="Variable Importance Plot From Random Forest")
   })
   
   
