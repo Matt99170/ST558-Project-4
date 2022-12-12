@@ -10,7 +10,7 @@ library(randomForest)
 ui <- fluidPage(theme = shinytheme("cerulean"),
                 withMathJax(),
                 navbarPage(
-                  # theme = "cerulean",  # <--- To use a theme, uncomment this
+                  
                   "Diabetes app",
 
                   tabPanel("About", 
@@ -223,10 +223,43 @@ and the drawbacks of each. You should include some type of math type in the expl
                   
                   
                   
+                  ##############data tab
                   
                   
-                  
-                  tabPanel("Navbar 5", "This panel is intentionally left blank")
+                  tabPanel("Data", 
+                           h3("Dataset"),
+                           
+                           selectizeInput("dataset", 
+                                          h5("Select the variable to subset the data and download"), 
+                                          selected = "BMI", 
+                                          choices = c("Pregnancies", 
+                                                      "Glucose", 
+                                                      "BloodPressure",
+                                                      "SkinThickness",
+                                                      "Insulin",
+                                                      "BMI",
+                                                      "DiabetesPedigreeFunction"
+                                          )),
+                           # Button
+                           downloadButton("downloadData", "Download"),
+                           
+                           
+                           
+                           
+                           
+                           
+                           
+                           
+                           
+                           mainPanel(tableOutput("entiretable"),
+                                     
+                                     tableOutput("subsettable"))
+                          
+                           
+                           
+                           
+                           
+                           )
                   
                 ) # navbarPage
 ) # fluidPage
@@ -518,9 +551,48 @@ server <- function(input, output, session) {
     
   })
   
-  
+  ################## data tab
+
+  output$entiretable <- renderTable({
+    #get data
+     diabetes_original 
+  })
   
   ##################################################
+  # Reactive value for selected dataset ----
+  
+  
+  
+  datasetInput <- reactive({
+   
+   
+    
+    switch(input$dataset,
+           "Pregnancies" = Pregnancies,
+           "Glucose"= Glucose,
+           "BloodPressure" = BloodPressure,
+           "SkinThickness" = SkinThickness,
+           "Insulin" = Insulin,
+           "BMI" = BMI)
+  })
+  
+  
+  
+  # Table of selected dataset ----
+  output$subsettable <- renderTable({
+     datasetInput()
+  })
+  
+  # Downloadable csv of selected dataset ----
+  output$downloadData <- downloadHandler(
+    filename = function() {
+      paste(input$dataset, ".csv", sep = "")
+    },
+    content = function(file) {
+      write.csv(datasetInput(), file, row.names = FALSE)
+    }
+  )
+  
   
   ########################################################################
 } 
