@@ -1,6 +1,7 @@
 
 library(shiny)
 library(shinythemes)
+library(tidyverse)
 
 
 # Define UI
@@ -41,14 +42,72 @@ ui <- fluidPage(theme = shinytheme("cerulean"),
                            
                            ),
                   
-                  tabPanel("Navbar 3", "This panel is intentionally left blank")
+                  tabPanel("Data Exploration", 
+                           
+                           
+                           sidebarLayout(
+                             sidebarPanel(
+                               selectizeInput("varX", 
+                                              h5("Select x-axis variable"), 
+                                              selected = "BMI", 
+                                              choices = c("Pregnancies", 
+                                                          "Glucose", 
+                                                          "BloodPressure",
+                                                          "SkinThickness",
+                                                          "Insulin",
+                                                          "BMI",
+                                                    "DiabetesPedigreeFunction"
+                               )),
+                               
+                               selectizeInput("varY", 
+                                              h5("Select y-axis variable"), 
+                                              selected = "BloodPressure", 
+                                              choices = c("Pregnancies", 
+                                                          "Glucose", 
+                                                          "BloodPressure",
+                                                          "SkinThickness",
+                                                          "Insulin",
+                                                          "BMI",
+                                                          "DiabetesPedigreeFunction"
+                                              )),
+                              
+
+                             ),
+                             
+                             mainPanel(
+                               plotOutput("corPlot1"),
+                               br(),
+                               h4(textOutput("text3"), align = "center"),
+                               br(),
+                               DT::dataTableOutput("table1")
+                             ),
+                           )
+                           
+                           
+                           
+                           
+                           
+                           ),
+                  tabPanel("Navbar 4", "This panel is intentionally left blank")
                   
                 ) # navbarPage
 ) # fluidPage
 
 
 # Define server function  
-server <- function(input, output) {
+server <- function(input, output, session) {
+  
+  
+  # Read demographic csv file
+ 
+    
+
+  
+  
+  
+  
+  
+  
   
   output$txtout <- renderText({
     paste( input$txt1, input$txt2, sep = " " )
@@ -95,26 +154,44 @@ server <- function(input, output) {
          
         </ul>")
     
-    
-    
-    
-#            
-# ∗ Describe the purpose of the app
-# 
-# 
-# ∗ Briefly discuss the data and its source - providing a link to more information about the data
-# ∗ Tell the user the purpose of each tab (page) of the app
-# ∗ Include a picture related to the data")
-#     HTML(paste(p1, sep = '<br/> <br/>'), "<br/> <br/>",
-#          "<ul>
-#         <li>Poverty Rate</li>
-#         <li>High School Graduation Rate</li>
-#         <li>High School Graduation Rate</li>
-#         <li>Median Household Income</li>
-#         <li>Racial Demographics</li>
-#         <li>Police Killings in the US</li>
-#         </ul>"
+
   })
+  
+  
+  
+  output$textt1 <- renderText({
+    "There are four main tabs as follows."
+    
+    
+  })
+  
+  
+  diabetes_original <- read_csv(file = "./diabetes.csv")
+  
+  output$corPlot1 <- renderPlot({
+    
+    
+   # dia2<-colnames(diabetes_original) <- make.unique(names(diabetes_original))
+   
+    
+   
+    
+    #PlotGraph1<- diabetes_original[ ,c(input$varX, input$varY)]
+    
+    PlotGraph1<- diabetes_original%>% select(xvar=input$varX, yvar=input$varY, Age)
+  
+    
+    ggplot(data = PlotGraph1, aes(x = xvar, y = yvar)) +
+        geom_point(aes(color = Age)) +
+        geom_smooth(method = "lm") +
+        ggtitle("Trend showing correlation between the x-axis and the y-axis variables selected")+
+        labs(x = "x-axis variable selected" , y = "y-axis variable selected")
+
+    
+    
+  })
+  
+  
   
 } # server
 
