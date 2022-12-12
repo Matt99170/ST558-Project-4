@@ -84,9 +84,55 @@ ui <- fluidPage(theme = shinytheme("cerulean"),
                            
                   #Modelling information subtab
                            tabsetPanel(
-                             tabPanel("Model Information", " You should explain these three modeling approaches, the benefits of each,
-and the drawbacks of each. You should include some type of math type in the explanation
-(you’ll need to include mathJax)."),
+                             tabPanel("Model Information", 
+                                      
+                                      fluidPage(
+                                        h4(strong("Diabetes App - Modeling Information")),
+                                        
+                                    
+                                        h4(strong("Logistic Regression"), "
+                                        Logistic regression is a statistical analysis method to predict a binary outcome, such as yes or no, based on prior observations of a data set.
+
+A logistic regression model predicts a dependent data variable by analyzing the relationship between one or more existing independent variables. When outcomes are binary logistic regression is prefered over linear regression.
+                                           
+                                     "),
+                                        br(),
+                                        h4(strong("Classification Tree"), "
+                                           Classification trees are used when the dataset needs to be split into classes that belong to the response variable. In many cases, the classes Yes or No.", br(), br(),
+
+"In other words, they are just two and mutually exclusive. In some cases, there may be more than two classes in which case a variant of the classification tree algorithm is used. ", br(), br(),
+
+"Regression trees, on the other hand, are used when the response variable is continuous. For instance, if the response variable is something like the price of a property or the temperature of the day, a regression tree is used.", br(), br(),
+
+"In other words, regression trees are used for prediction-type problems while classification trees are used for classification-type problems.
+                                           
+                                           "),
+                                        br(),
+                                        h4(strong("Random Forest"), "
+                                        
+                                        The idea behind the random forest model is the same as bagging, but we use a random subset of predictors for each bootstrap sample tree fit ('indicated by 'mtry').", br(), br(), 
+
+"More specifically, it involves:creating a boothstrap sample (same size with replacement), training the tree on this sample (no pruning necessary), repeating the process a large number of times and the final prediction is the average of those predictions.", br(), br(),
+
+"Finding the average of predictions decreases variance, which improves predictions, but unfortunately we lose interpretability. ", br(), br(), 
+
+"some advantages of random forest models are that it reduces overfitting in decision trees and helps to improve the accuracy, 
+it is flexible to both classification and regression problems,
+it works well with both categorical and continuous values,
+it automates missing values present in the data and
+Normalising of data is not required as it uses a rule-based approach. ", br(), br(),
+
+"However, despite these advantages, a random forest algorithm also has some drawbacks. It requires much computational power as well as resources as it builds numerous trees to combine their outputs, it also requires much time for training as it combines a lot of decision trees to determine the class,
+due to the ensemble of decision trees, it also suffers interpretability and fails to determine the significance of each variable.
+                                           
+                                           ")
+                                      )
+                                      
+                                      
+                                      
+                                      
+                                      
+                                      ),
                              
                              
     # Model fitting subtab                         
