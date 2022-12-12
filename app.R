@@ -125,14 +125,7 @@ Normalising of data is not required as it uses a rule-based approach. ", br(), b
 "However, despite these advantages, a random forest algorithm also has some drawbacks. It requires much computational power as well as resources as it builds numerous trees to combine their outputs, it also requires much time for training as it combines a lot of decision trees to determine the class,
 due to the ensemble of decision trees, it also suffers interpretability and fails to determine the significance of each variable.
                                            
-                                           ")
-                                      )
-                                      
-                                      
-                                      
-                                      
-                                      
-                                      ),
+                                           "))),
                              
                              
     # Model fitting subtab                         
