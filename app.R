@@ -11,8 +11,10 @@ ui <- fluidPage(theme = shinytheme("cerulean"),
                 withMathJax(),
                 navbarPage(
                   
-                  "Diabetes app",
-
+                  "Diabetes App",
+                  
+                  
+#About tab
                   tabPanel("About", 
                            mainPanel(
                              h3("Purpose of App"),
@@ -24,13 +26,11 @@ ui <- fluidPage(theme = shinytheme("cerulean"),
                              h3("Purpose of each tab (page)"),
                              htmlOutput("txt2"),
                              tags$img(src="NIH image.png")
-                           )
-                           
-                           
-                           ),
+                           )),
+
+#Data Exploration tab
                   
                   tabPanel("Data Exploration", 
-                           
                            
                            sidebarLayout(
                              sidebarPanel(
@@ -46,53 +46,57 @@ ui <- fluidPage(theme = shinytheme("cerulean"),
                                                     "DiabetesPedigreeFunction"
                                )),
                                
-                               selectizeInput("varY", 
-                                              h5("Select y-axis variable"), 
-                                              selected = "BloodPressure", 
-                                              choices = c("Pregnancies", 
-                                                          "Glucose", 
-                                                          "BloodPressure",
-                                                          "SkinThickness",
-                                                          "Insulin",
-                                                          "BMI",
-                                                          "DiabetesPedigreeFunction"
+                      selectizeInput("varY", 
+                                     h5("Select y-axis variable"), 
+                                    selected = "BloodPressure", 
+                                    choices = c("Pregnancies", 
+                                                "Glucose", 
+                                                "BloodPressure",
+                                                "SkinThickness",
+                                                "Insulin",
+                                                "BMI",
+                                                "DiabetesPedigreeFunction"
                                               )),
-                              
-
-                             ),
+                              ),
                              
                              mainPanel(
                                plotOutput("corPlot1"),
                                br(),
+                               h5(textOutput("text31")),
+                              
+                              
                                h4(tableOutput("text3"), align = "center"),
                                br(),
-                               h4(verbatimTextOutput("textt3"), align = "center")
+                               h5(textOutput("text32")),
+                               
+                               h2(verbatimTextOutput("textt3"), align = "center")
                              ),
-                           )
-                           
-                           
-                           
-                           
-                           
-                           ),
+                           )),
+
+
+
+#Modelling tab
                   tabPanel("Modeling", 
+                  
                            
+                  #Modelling information subtab
                            tabsetPanel(
                              tabPanel("Model Information", " You should explain these three modeling approaches, the benefits of each,
 and the drawbacks of each. You should include some type of math type in the explanation
 (you’ll need to include mathJax)."),
                              
                              
-                             
-                             tabPanel("Model Fitting",h3("Percentage of Training and Test split"),br(),
-                                      sidebarPanel(
-                                        sliderInput("bins1",
-                                                    "Select percentage of training set:",
+    # Model fitting subtab                         
+    tabPanel("Model Fitting"
+             ,h3("Percentage of Training and Test split"),
+             br(),
+             sidebarPanel(
+             sliderInput("bins1",
+                         "Select percentage of training set:",
                                                     min = 0,
                                                     max = 1,
                                                     value = 0.7)
                                       ),
-                                      
                                       
                                       
                                       h3("Predictors for models"),
@@ -155,24 +159,10 @@ and the drawbacks of each. You should include some type of math type in the expl
                                           br(),
                                           plotOutput("varImpPlot")
                                         ),
-                                      )   
-                                      
-                                      
-                                      
-                                      
-                                      
-                                      ),
-                             
-                             
-                             
-                             
-                             
-                             
-                             
-                             
-                             
-                             
-                             
+                                      )),
+                  
+    
+                      #Logistic Regression Predictor subtab
                              tabPanel("Logistic Regression Predictor"
                                       
                                       ,h3("Values For Prediction"),
@@ -206,26 +196,10 @@ and the drawbacks of each. You should include some type of math type in the expl
                                       tableOutput("logitpred2"),
                                       
                                       
-                                    )
-                                    
-                                    ####
-                                    
-                                    
-                                    ))),
-                            
+                                    )))),
+    
                   
-                  
-                  
-                  
-                  
-                  
-                  
-                  
-                  
-                  
-                  ##############data tab
-                  
-                  
+#Data tab
                   tabPanel("Data", 
                            h3("Dataset"),
                            
@@ -242,22 +216,10 @@ and the drawbacks of each. You should include some type of math type in the expl
                                           )),
                            # Button
                            downloadButton("downloadData", "Download"),
-                           
-                           
-                           
-                           
-                           
-                           
-                           
-                           
-                           
+                          
                            mainPanel(tableOutput("entiretable"),
                                      
                                      tableOutput("subsettable"))
-                          
-                           
-                           
-                           
                            
                            )
                   
@@ -268,7 +230,7 @@ and the drawbacks of each. You should include some type of math type in the expl
 # Define server function  
 server <- function(input, output, session) {
   
-  
+  #outputs
   
   output$txtout <- renderText({
     paste( input$txt1, input$txt2, sep = " " )
@@ -279,7 +241,7 @@ server <- function(input, output, session) {
   })
   
   output$text1 <- renderText({
-    p1 <- ("The purpose of the app is to ....")
+    p1 <- ("The purpose of the app is to is to create a nice looking shiny app that can be used to explore data and model it.")
   })
   
   output$text2 <- renderText({
@@ -287,7 +249,7 @@ server <- function(input, output, session) {
     HTML(paste(p1, sep = '<br/> <br/>'), "<br/> <br/>",
          "<ul>
         <li>Pregnancies: Number of times pregnant</li>
-        <li>Glucose: Plasma glucose concentration a 2 hours in an oral glucose tolerance test>
+        <li>Glucose: Plasma glucose concentration a 2 hours in an oral glucose tolerance test
         <li>BloodPressure: Diastolic blood pressure (mm Hg)</li>
         <li>SkinThickness: Triceps skin fold thickness (mm)</li>
         <li>Insulin: 2-Hour serum insulin (mu U/ml)</li>
@@ -346,13 +308,23 @@ server <- function(input, output, session) {
   })
   
   
+  output$text31 <- renderText({
+   "Table show mean and standard deviation for the x-axis variable selected"
+    
+  })
+  
+  
+  
   output$text3 <- renderTable({
     PlotGraph1<- diabetes_original%>% select(xvar=input$varX, yvar=input$varY, Age)
     data.frame(mean=mean(PlotGraph1$xvar), std_dev=sd(PlotGraph1$xvar))
     
   })
   
-  
+  output$text32 <- renderText({
+    "Summary of y-axis variable selected"
+    
+  })  
   
   output$textt3 <- renderPrint({
     PlotGraph1<- diabetes_original%>% select(xvar=input$varX, yvar=input$varY, Age)
@@ -399,7 +371,7 @@ server <- function(input, output, session) {
     
     log2<- testSet%>% select(xvar1=input$pred1, yvar1=input$pred2, zvar1=input$pred3, Outcome)
     
-    
+    #logistic regression
     l_poly_1 <- train(Outcome ~ xvar1 + yvar1 + zvar1,
                       data = log1,
                       trControl = trainControl(method = "cv", number = 10),
@@ -521,7 +493,7 @@ server <- function(input, output, session) {
   
   output$logitpred2 <- renderTable({
     
-    ######
+    
     
     
     set.seed(123)
@@ -534,7 +506,7 @@ server <- function(input, output, session) {
     trainingSet <- diabetes_original[diabetesIndex, ]
     testSet  <- diabetes_original[-diabetesIndex, ]
     
-    ###################### Logistic regression
+    ###################### Logistic regression for predictor
     
     l_poly_1 <- train(Outcome ~ BMI + BloodPressure + Glucose,
                       data = trainingSet,
