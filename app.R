@@ -12,22 +12,7 @@ ui <- fluidPage(theme = shinytheme("cerulean"),
                 navbarPage(
                   # theme = "cerulean",  # <--- To use a theme, uncomment this
                   "Diabetes app",
-                  tabPanel("delete",
-                           sidebarPanel(
-                             tags$h3("Input:"),
-                             textInput("txt1", "Given Name:", ""),
-                             textInput("txt2", "Surname:", ""),
-                             
-                           ), # sidebarPanel
-                           mainPanel(
-                             h1("Header 1"),
-                             
-                             h4("Output 1"),
-                             verbatimTextOutput("txtout"),
-                             
-                           ) # mainPanel
-                           
-                  ), # Navbar 1, tabPanel
+
                   tabPanel("About", 
                            mainPanel(
                              h3("Purpose of App"),
@@ -150,7 +135,7 @@ and the drawbacks of each. You should include some type of math type in the expl
                                                 "BMI",
                                                 "DiabetesPedigreeFunction"
                                                    )),
-                                          
+                                     actionButton("submitbutton", "Get Model Fit Stats", class= "btn btn-primary")     
                                           
                                         ),
                                         
@@ -188,13 +173,46 @@ and the drawbacks of each. You should include some type of math type in the expl
                              
                              
                              
-                             tabPanel("third", "This panel is intentionally left blank")
-                             
-        
-                             
-                           )
-                           
-                           ),
+                             tabPanel("Logistic Regression Predictor"
+                                      
+                                      ,h3("Values For Prediction"),
+                                    br(),
+                                      sidebarPanel(
+                                        sliderInput("bins11",
+                                                    "Select value of BMI:",
+                                                    min = 0,
+                                                    max = 100,
+                                                    value = 40)
+                                      ), 
+                                    
+                                    sidebarPanel(
+                                      sliderInput("bins12",
+                                                  "Select value of BloodPressure:",
+                                                  min = 0,
+                                                  max = 200,
+                                                  value = 90)
+                                    ),
+                                    
+                                    sidebarPanel(
+                                      sliderInput("bins13",
+                                                  "Select value of Glucose:",
+                                                  min = 0,
+                                                  max = 300,
+                                                  value = 150)
+                                    ),
+                                    mainPanel(
+                                      textOutput("logitpred"),
+                                      br(),
+                                      tableOutput("logitpred2"),
+                                      
+                                      
+                                    )
+                                    
+                                    ####
+                                    
+                                    
+                                    ))),
+                            
                   
                   
                   
@@ -216,16 +234,6 @@ and the drawbacks of each. You should include some type of math type in the expl
 
 # Define server function  
 server <- function(input, output, session) {
-  
-  
-  # Read demographic csv file
- 
-    
-
-  
-  
-  
-  
   
   
   
@@ -290,7 +298,7 @@ server <- function(input, output, session) {
   
   output$corPlot1 <- renderPlot({
     
-    
+     
     
     PlotGraph1<- diabetes_original%>% select(xvar=input$varX, yvar=input$varY, Age)
   
@@ -328,18 +336,13 @@ server <- function(input, output, session) {
   
   diabetes_original <- diabetes_original %>% mutate(Outcome = as.factor(Outcome))
   
- #  set.seed(123)
- #  #splitting into train and test set
- #  #indices to split on
- # diabetesIndex <- createDataPartition(diabetes_original$Outcome, p = 0.7, list = FALSE)
- #  #subset
- #  trainingSet <- diabetes_original[diabetesIndex, ]
- #  testSet  <- diabetes_original[-diabetesIndex, ]
   
+  mydata <- reactiveValues()
   
-  
+  observeEvent(input$submitbutton,{
+ 
   output$logit <- renderText({ "Logistic Regression Model"
-
+   
   })
 
   
@@ -475,7 +478,49 @@ server <- function(input, output, session) {
     varImpPlot(r_f2, sort=FALSE, main="Variable Importance Plot From Random Forest")
   })
   
+  })
   
+  
+  ###################################################
+  output$logitpred <- renderText({"A value of '1' indicates that person may have diabetes and similarly a value of '0' indiccates that the person may not have diabetes"
+    
+  })
+  
+  output$logitpred2 <- renderTable({
+    
+    ######
+    
+    
+    set.seed(123)
+    
+    diabetes_original <- diabetes_original %>% mutate(Outcome = as.factor(Outcome))
+    
+    #indices to split on
+    diabetesIndex <- createDataPartition(diabetes_original$Outcome, p = 0.70, list = FALSE)
+    #subset
+    trainingSet <- diabetes_original[diabetesIndex, ]
+    testSet  <- diabetes_original[-diabetesIndex, ]
+    
+    ###################### Logistic regression
+    
+    l_poly_1 <- train(Outcome ~ BMI + BloodPressure + Glucose,
+                      data = trainingSet,
+                      trControl = trainControl(method = "cv", number = 10),
+                      preProcess = c("center", "scale"),
+                      method = "glmnet")
+    
+    ################
+    l_poly_1Prediction1 <- predict(
+      l_poly_1, newdata = data.frame(BMI=input$bins11, BloodPressure=input$bins12, Glucose=input$bins13))
+    
+    l_poly_1Prediction1
+    #####
+    
+  })
+  
+  
+  
+  ##################################################
   
   ########################################################################
 } 
