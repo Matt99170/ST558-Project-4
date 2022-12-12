@@ -2,6 +2,7 @@
 library(shiny)
 library(shinythemes)
 library(tidyverse)
+library(caret)
 
 
 # Define UI
@@ -77,9 +78,9 @@ ui <- fluidPage(theme = shinytheme("cerulean"),
                              mainPanel(
                                plotOutput("corPlot1"),
                                br(),
-                               h4(textOutput("text3"), align = "center"),
+                               h4(tableOutput("text3"), align = "center"),
                                br(),
-                               DT::dataTableOutput("table1")
+                               h4(verbatimTextOutput("textt3"), align = "center")
                              ),
                            )
                            
@@ -88,7 +89,112 @@ ui <- fluidPage(theme = shinytheme("cerulean"),
                            
                            
                            ),
-                  tabPanel("Navbar 4", "This panel is intentionally left blank")
+                  tabPanel("Modeling", 
+                           
+                           tabsetPanel(
+                             tabPanel("Model Information", " You should explain these three modeling approaches, the benefits of each,
+and the drawbacks of each. You should include some type of math type in the explanation
+(you’ll need to include mathJax)."),
+                             
+                             
+                             
+                             tabPanel("Model Fitting", h3("Predictors for models"),
+                                      
+                                      
+                                    sidebarLayout(
+                                    sidebarPanel(
+                                    selectizeInput("pred1", 
+                                    h5("Select first predictor variable"), 
+                                    selected = "BMI", 
+                                    choices = c("Pregnancies", 
+                                                "Glucose", 
+                                                "BloodPressure",
+                                                "SkinThickness",
+                                                "Insulin",
+                                                "BMI",
+                                                "DiabetesPedigreeFunction"
+                                                         )),
+                                          
+                                    selectizeInput("pred2", 
+                                    h5("Select second predictor variable"), 
+                                    selected = "BloodPressure", 
+                                    choices = c("Pregnancies", 
+                                                "Glucose", 
+                                                "BloodPressure",
+                                                "SkinThickness",
+                                                "Insulin",
+                                                "BMI",
+                                                "DiabetesPedigreeFunction"
+                                                         )),
+                                    
+                                    selectizeInput("pred3", 
+                                    h5("Select third predictor variable"), 
+                                    selected = "Insulin", 
+                                    choices = c("Pregnancies", 
+                                                "Glucose", 
+                                                "BloodPressure",
+                                                "SkinThickness",
+                                                "Insulin",
+                                                "BMI",
+                                                "DiabetesPedigreeFunction"
+                                                   )),
+                                          
+                                          
+                                        ),
+                                        
+                                        mainPanel(
+                                          textOutput("logit"),
+                                          br(),
+                                          verbatimTextOutput("logit2"),
+                                          br(),
+                                          textOutput("classtree"),
+                                          br(),
+                                          verbatimTextOutput("classtree2"),
+                                          br(),
+                        
+                                          textOutput("randomforest"),
+                                          br(),
+                                          verbatimTextOutput("randomforest2")
+                                        ),
+                                      )   
+                                      
+                                      
+                                      
+                                      
+                                      
+                                      ),
+                             
+                             
+                             
+                             
+                             
+                             
+                             
+                             
+                             
+                             
+                             
+                             tabPanel("third", "This panel is intentionally left blank")
+                             
+        
+                             
+                           )
+                           
+                           ),
+                  
+                  
+                  
+                  
+                  
+                  
+                  
+                  
+                  
+                  
+                  
+                  
+                  
+                  tabPanel("Navbar 5", "This panel is intentionally left blank")
                   
                 ) # navbarPage
 ) # fluidPage
@@ -171,12 +277,6 @@ server <- function(input, output, session) {
   output$corPlot1 <- renderPlot({
     
     
-   # dia2<-colnames(diabetes_original) <- make.unique(names(diabetes_original))
-   
-    
-   
-    
-    #PlotGraph1<- diabetes_original[ ,c(input$varX, input$varY)]
     
     PlotGraph1<- diabetes_original%>% select(xvar=input$varX, yvar=input$varY, Age)
   
@@ -187,13 +287,127 @@ server <- function(input, output, session) {
         ggtitle("Trend showing correlation between the x-axis and the y-axis variables selected")+
         labs(x = "x-axis variable selected" , y = "y-axis variable selected")
 
-    
+  
+  })
+  
+  
+  output$text3 <- renderTable({
+    PlotGraph1<- diabetes_original%>% select(xvar=input$varX, yvar=input$varY, Age)
+    data.frame(mean=mean(PlotGraph1$xvar), std_dev=sd(PlotGraph1$xvar))
     
   })
   
   
   
-} # server
+  output$textt3 <- renderPrint({
+    PlotGraph1<- diabetes_original%>% select(xvar=input$varX, yvar=input$varY, Age)
+    
+    summary(PlotGraph1$yvar)
+    
+  })
+  
+  ########################################################################
+  diabetes_original <- read_csv(file = "./diabetes.csv")
+  
+#splitting into 70% train and 30% test set
+  set.seed(123)
+  
+  diabetes_original <- diabetes_original %>% mutate(Outcome = as.factor(Outcome))
+  
+  #indices to split on
+  diabetesIndex <- createDataPartition(diabetes_original$Outcome, p = 0.70, list = FALSE)
+  #subset
+  trainingSet <- diabetes_original[diabetesIndex, ]
+  testSet  <- diabetes_original[-diabetesIndex, ]
+  
+  
+  output$logit <- renderText({ "Logistic Regression Model"
+    
+  })
+
+  
+  
+  output$logit2 <- renderPrint({
+    log1<- trainingSet%>% select(xvar1=input$pred1, yvar1=input$pred2, zvar1=input$pred3, Outcome)
+    
+    log2<- testSet%>% select(xvar1=input$pred1, yvar1=input$pred2, zvar1=input$pred3, Outcome)
+    
+    
+    l_poly_1 <- train(Outcome ~ xvar1 + yvar1 + zvar1,
+                      data = log1,
+                      trControl = trainControl(method = "cv", number = 10),
+                      preProcess = c("center", "scale"),
+                      method = "glmnet")
+    
+    
+    l_poly_1Prediction <- predict(l_poly_1, newdata = log2)
+    m1 <- postResample(l_poly_1Prediction, log2$Outcome)
+    m1
+    
+  })
+  
+  #################################################classification tree
+  
+  output$classtree <- renderText({ "Classification Tree"
+    
+  })
+  
+  
+  
+  output$classtree2 <- renderPrint({
+    
+    log11<- trainingSet%>% select(xvar11=input$pred1, yvar11=input$pred2, zvar11=input$pred3, Outcome)
+    
+    log22<- testSet%>% select(xvar11=input$pred1, yvar11=input$pred2, zvar11=input$pred3, Outcome)
+    
+    
+    class_tree = train(Outcome ~ xvar11 + yvar11 + zvar11, 
+                       data = log11, 
+                       method="rpart", 
+                       trControl = trainControl(method = "cv"))
+    
+    test_pred_tree <- predict(class_tree, newdata = log22)
+    m2 <- postResample(test_pred_tree, log22$Outcome)
+    #calling m3 object
+    m2
+  })
+  
+  
+  #########################################################################
+  #random forest model
+  
+  output$randomforest <- renderText({ "Random Forest Model"
+    
+  })
+  
+  
+  
+  output$randomforest2 <- renderPrint({
+    
+    log111<- trainingSet%>% select(xvar111=input$pred1, yvar111=input$pred2, zvar111=input$pred3, Outcome)
+    
+    log222<- testSet%>% select(xvar111=input$pred1, yvar111=input$pred2, zvar111=input$pred3, Outcome)
+    
+    
+    r_f <- train(Outcome ~ xvar111 + yvar111 + zvar111, 
+                 data = log111,                  
+                 method = "rf",
+                 trControl=trainControl(method = "cv", number = 5),
+                 preProcess = c("center", "scale"),
+                 tuneGrid = data.frame(mtry = 1:3))
+    #calling r_f object
+    r_f
+    
+    test_pred_r_f <- predict(r_f, newdata = log222)
+    m3 <- postResample(test_pred_r_f, log222$Outcome)
+    #calling m3 object
+    m3
+  })
+  
+  
+  
+  ########################################################################
+} 
 
 
 # Create Shiny object
