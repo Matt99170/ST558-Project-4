@@ -22,7 +22,21 @@ There are four main tabs as follows
 * Data page that allows for Scrolling through the data set, subsetting this data set (rows and columns) and Saving the (possibly subsetted) data as a file
   
  
-    
+## Required packages
+
+* shiny
+* shinythemes
+* tidyverse
+* caret
+* randomForest
+
+The following code can be used to install the above packages:
+
+install.packages("shiny", "shinythemes", "tidyverse", "caret", "randomForest")
+
+## Code to run the App
+
+runGitHub(repo = "ST558-Project-4", username = "matt99170", ref = "main")
 
 
 
