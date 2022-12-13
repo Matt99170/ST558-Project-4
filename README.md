@@ -37,9 +37,13 @@ install.packages("shiny", "shinythemes", "tidyverse", "caret", "randomForest")
 ## Code to run the App
 
 library(shiny)
+
 library(shinythemes)
+
 library(tidyverse)
+
 library(caret)
+
 library(randomForest)
 
 runGitHub(repo = "ST558-Project-4", username = "matt99170", ref = "main")
